@@ -1,0 +1,54 @@
+{
+  "name": "winston-knex",
+  "version": "0.1.0",
+  "description": "Winston Transport for Knex JS",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "babel src/ --out-dir build/ --copy-files",
+    "test": "nyc --reporter=text --reporter lcov npm run test:mocha",
+    "test:mocha": "mocha test/*.js test/**/*.js --exit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aldy505/winston-knex.git"
+  },
+  "keywords": [
+    "knex",
+    "winston",
+    "winston-3.x",
+    "winston-3",
+    "transport",
+    "winston-transport"
+  ],
+  "author": "Reinaldy Rafli <hi@reinaldyrafli.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aldy505/winston-knex/issues"
+  },
+  "homepage": "https://github.com/aldy505/winston-knex#readme",
+  "engines": {
+    "node": ">=8"
+  },
+  "directories": {
+    "lib": "src/",
+    "test": "test/"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.12.10",
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "abstract-winston-transport": "^0.5.1",
+    "chai": "^4.2.0",
+    "dotenv": "^8.2.0",
+    "eslint": "^7.17.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "mocha": "^8.2.1",
+    "nyc": "^15.1.0"
+  },
+  "dependencies": {
+    "knex": "^0.21.15",
+    "winston": "^3.3.3",
+    "winston-transport": "^4.4.0"
+  }
+}

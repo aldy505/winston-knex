@@ -1,0 +1,13 @@
+{
+    "presets": [
+        ["@babel/preset-env", {
+            "targets": "node 8",
+            "useBuiltIns": "entry",
+            "corejs": 3
+        }]
+    ],
+    "plugins": [],
+    "comments": true,
+    "compact": "auto",
+    "sourceMaps": true
+}
