@@ -2,8 +2,14 @@
   "name": "winston-knex",
   "version": "0.1.0",
   "description": "Winston Transport for Knex JS",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build/index.js",
+    "build/index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "babel src/ --out-dir build/ --copy-files",
     "test": "nyc --reporter=text --reporter lcov npm run test:mocha",
