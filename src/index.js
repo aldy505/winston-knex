@@ -40,19 +40,31 @@ class KnexTransport extends Transport {
    */
   init() {
     const { client, tableName } = this;
-    return client.schema.hasTable(tableName)
-      .then((exist) => {
-        if (!exist) {
-          return client.schema.createTableIfNotExists(tableName, (table) => {
-            table.timestamp('timestamp').defaultTo(knex.fn.now());
-            table.string('level');
-            table.string('message');
-            table.json('meta');
-          });
-        }
-        return null;
-      })
-      .catch((e) => new Error(e));
+    return client.transaction((trx) => {
+      trx.schema.hasTable(tableName)
+        .then((exist) => {
+          if (!exist) {
+            return client.transaction((trx2) => {
+              trx2.schema.createTable(tableName, (table) => {
+                table.timestamp('timestamp').defaultTo(knex.fn.now());
+                table.string('level');
+                table.string('message');
+                table.json('meta');
+              })
+                .transacting(trx2)
+                .then(trx2.commit())
+                .catch(trx2.rollback());
+            })
+              .then(() => null)
+              .catch((e) => { throw Error(e); });
+          }
+          return null;
+        })
+        .then(() => null)
+        .catch((e) => { throw Error(e); });
+    })
+      .then(() => null)
+      .catch((e) => { throw Error(e); });
   }
 
   /**
@@ -76,9 +88,9 @@ class KnexTransport extends Transport {
       this.emit('logged', args);
       callback(null, true);
       return null;
-    }).catch((e) => {
-      this.emit('error', e);
-      callback(e);
+    }).catch((error) => {
+      this.emit('error', error);
+      callback(error);
       return null;
     });
   }

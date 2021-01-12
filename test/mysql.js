@@ -8,14 +8,16 @@ const { createLogger } = require('winston')
 
 const options = {
     client: 'mysql',
-    connection: process.env.MYSQL_CONNECTION_STRING
+    connection: process.env.MYSQL_CONNECTION_STRING,
+    tableName: 'winston_knex'
 }
 
 describe("Mysql test", function() {
     it("should return a logger instance", function() {
-        createLogger({
+        const logger = createLogger({
             transports: [new KnexTransport(options)]
         })
+        assert.isFunction(logger)
         
     })
     it("should test abstract-winston-transport", function() {
