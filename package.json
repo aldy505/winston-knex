@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "build": "babel src/ --out-dir build/ --copy-files",
+    "lint": "eslint --ignore-path .gitignore src/",
     "test": "nyc --reporter=text --reporter lcov npm run test:mocha",
     "test:mocha": "mocha test/*.js test/**/*.js --exit"
   },
