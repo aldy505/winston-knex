@@ -6,7 +6,7 @@ This module is here because I can't find Knex Transport that supports Winston 3.
 
 <strong>This already includes Typescript typings.</strong> No need to find `@types/winston-knex`.
 
-This is still a work in progress. Use it at your own risk (of errors, I mean). If you want to collaborate, please create a new issue (pull request will be welcomed too). I can't test all the database provided by Knex, I only can do mysql and postgres, all help would be welcome.
+⚠ This is still a work in progress. Use it at your own risk (of errors, I mean). If you want to collaborate, please create a new issue (pull request will be welcomed too). I can't test all the database provided by Knex, I only can do mysql and postgres, all help would be welcome.
 
 If you want to help with the development, I could really use a hand for testing the module as I'm very new to making these.
 
@@ -16,6 +16,16 @@ If you want to help with the development, I could really use a hand for testing 
 $ npm install winston-knex
 # OR IF YOU PREFER YARN
 $ yarn add winston-knex
+```
+
+Please also add your working database as dependency as described by Knex's documentation:
+```bash
+$ npm install pg
+$ npm install sqlite3
+$ npm install mysql
+$ npm install mysql2
+$ npm install oracledb
+$ npm install mssql
 ```
 
 ## Short Usage
@@ -42,7 +52,9 @@ logger.log({
   message: 'This should do as well'
 })
 ```
+
 ## TODO
+
 - [ ] Streaming logs (stream function)
 - [ ] Querying logs (query function)
 

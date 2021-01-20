@@ -5,9 +5,11 @@ const KnexTransport = require('../build/index.js');
 const test_suite = require('abstract-winston-transport');
 
 const options = {
-    client: 'mysql',
-    connection: process.env.MYSQL_CONNECTION_STRING,
-    tableName: 'winston_knex'
+    client: 'sqlite3',
+    connection: () => ({
+        filename: process.env.SQLITE_FILENAME
+    }),
+    tableName: 'logs'
 }
 
 test_suite({

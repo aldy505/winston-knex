@@ -1,28 +1,17 @@
 /* eslint-disable */
 const { resolve } = require('path')
 require('dotenv').config({path: resolve(__dirname, './../.env')})
-const { assert, expect, should } = require('chai')
-const KnexTransport = require('../build/index.js')
-const { createLogger } = require('winston')
-
+const KnexTransport = require('../build/index.js');
+const test_suite = require('abstract-winston-transport');
 
 const options = {
     client: 'pg',
-    connection: process.env.POSTGRES_CONNECTION_STRING
+    connection: process.env.POSTGRES_CONNECTION_STRING,
+    tableName: 'winston_knex'
 }
 
-describe("Postgresql test", function() {
-    it("should return a logger instance", function() {
-        createLogger({
-            transports: [new KnexTransport(options)]
-        })
-        
-    })
-    it("should test abstract-winston-transport", function() {
-        require('abstract-winston-transport')({
-            name: 'KnexTransport',
-            Transport: require('../build/index.js'),
-            construct: options
-          });
-    })
-})
+test_suite({
+    name: 'KnexTransport',
+    Transport: KnexTransport,
+    construct: options
+  })

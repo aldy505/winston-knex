@@ -5,19 +5,60 @@
  * @author Reinaldy Rafli <hi@reinaldyrafli.com> (https://github.com/aldy505)
  */
 
-import { Config } from "knex"
+import { Client, ConnectionConfigProvider, MigratorConfig, PoolConfig, SeederConfig, StaticConnectionConfig } from "knex"
+import TransportStream, * as Transport from "winston-transport"
+import winston from 'winston'
 
-export = KnexTransport
+declare module 'winston' {
+  export interface Transports {
+    KnexTransport: typeof KnexTransport;
+    KnexTransportOptions: KnexTransportOptions;
+  }
+}
 
-declare namespace KnexTransport {
-  interface constructorOptions extends Config {
-    level?: string,
-    label?: string,
-    silent?: boolean,
-    tableName?: string
+declare module 'winston-knex' {
+  export interface WinstonKnexTransport {
+    KnexTransport: KnexTransportInstance;
   }
 
-  export class KnexTransport {
+  interface KnexConfig<SV extends {} = any> {
+    debug?: boolean;
+    client?: string | typeof Client;
+    dialect?: string;
+    version?: string;
+    connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
+    pool?: PoolConfig;
+    migrations?: MigratorConfig;
+    postProcessResponse?: (result: any, queryContext: any) => any;
+    wrapIdentifier?: (
+      value: string,
+      origImpl: (value: string) => string,
+      queryContext: any
+    ) => string;
+    seeds?: SeederConfig<SV>;
+    acquireConnectionTimeout?: number;
+    useNullAsDefault?: boolean;
+    searchPath?: string | readonly string[];
+    asyncStackTraces?: boolean;
+  }
+
+interface KnexTransportOptions extends KnexConfig, Transport.TransportStreamOptions {
+  level?: string,
+  label?: string,
+  silent?: boolean,
+  tableName?: string,
+}
+
+interface KnexTransportInstance extends KnexConfig, Transport {
+  level?: string,
+  label?: string,
+  silent?: boolean,
+  tableName?: string
+  new(opts: KnexTransportOptions): KnexTransportInstance
+}
+
+class KnexTransport extends TransportStream {
+  
   /**
    * Constructor for KnexTransport
    * @constructor
@@ -29,13 +70,13 @@ declare namespace KnexTransport {
    * @param {String|Object} opts.connection Database connection URI
    * @param {String} opts.tableName Database table name (defaults to logs)
    */
-    constructor(opts: constructorOptions)
-    /**
+    constructor(opts: KnexTransportOptions)
+  /**
    * Initialize connection & table
    * @return {Promise} Knex Promise
    */
     init(): Promise<boolean>
-    /**
+  /**
    * Core logging
    * @param {*} args Logs arguments
    * @param {*} args.level Logs level
@@ -43,6 +84,8 @@ declare namespace KnexTransport {
    * @param {*} args.meta Logs meta
    * @param {Function} callback Continuation to respond to when complete
    */
-    log(args: any, callback: () => void): any
-  }
+    log(args: any, callback?: () => void): any
+  } 
+
+  export = KnexTransport
 }
