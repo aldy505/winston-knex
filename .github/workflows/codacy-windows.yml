@@ -1,4 +1,4 @@
-name: Codacy Security Scan
+name: Codacy Security Scan (Windows)
 
 on:
   push:
@@ -8,8 +8,8 @@ on:
 
 jobs:
   codacy-security-scan:
-    name: Codacy Security Scan
-    runs-on: ubuntu-latest
+    name: Codacy Security Scan (Windows)
+    runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@master
@@ -33,9 +33,3 @@ jobs:
           # Force 0 exit code to allow SARIF file generation
           # This will handover control about PR rejection to the GitHub side
           max-allowed-issues: 2147483647
-      
-      # Upload the SARIF file generated in the previous step
-      - name: Upload SARIF results file
-        uses: github/codeql-action/upload-sarif@master
-        with:
-          sarif_file: results.sarif

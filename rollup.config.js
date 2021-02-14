@@ -1,4 +1,5 @@
-import typescript from '@rollup/plugin-typescript';
+import typescript from 'rollup-plugin-typescript2';
+import { DEFAULT_EXTENSIONS } from '@babel/core';
 import { babel } from '@rollup/plugin-babel';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
@@ -14,9 +15,10 @@ export default {
       format: 'esm',
     },
   ],
+  external: ['winston-transport', 'knex'],
   plugins: [
     typescript({ exclude: ['./test/**/*.ts'] }),
     nodeResolve(),
-    babel({ babelHelpers: 'bundled' }),
+    babel({ extensions: [...DEFAULT_EXTENSIONS, '.ts', '.tsx'], babelHelpers: 'bundled' }),
   ],
 };

@@ -1,4 +1,4 @@
-name: "Test"
+name: "Codecov Code Coverage"
 on:
   push:
     branches: [ "*" ]
@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    - name: Test
+    - name: Codecov Code Coverage
     - runs-on: ubuntu-latest
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -20,6 +20,9 @@ jobs:
       uses: harmon758/postgresql-action@v1
       with:
         postgresql version: '13'
+        postgresql db: 'winston_knex'
+        postgresql user: postgres
+        postgresql password: password
     - name: Setup Node.js
       uses: actions/setup-node@v2.1.4
       with:
@@ -33,6 +36,7 @@ jobs:
     - name: Upload to Codecov
       uses: codecov/codecov-action@v1
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         directory: coverage
         file: coverage-final.json
 

@@ -77,4 +77,3 @@ export interface WinstonKnexTransport {
     KnexTransport: KnexTransport;
 }
 export default KnexTransport;
-//# sourceMappingURL=index.d.ts.map

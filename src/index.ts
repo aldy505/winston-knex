@@ -14,7 +14,6 @@ import knex, {
   StaticConnectionConfig,
   Transaction,
 } from 'knex';
-import winston from 'winston'
 import TransportStream from 'winston-transport';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -208,5 +207,4 @@ export interface WinstonKnexTransport {
   KnexTransport: KnexTransport;
 }
 
-// winston.transports.KnexTransport = KnexTransport as any;
 export default KnexTransport;
