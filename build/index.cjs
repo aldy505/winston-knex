@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * @module 'winston-knex'
  * @fileoverview Knex Transport for Winston 3.x

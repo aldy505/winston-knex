@@ -4,7 +4,8 @@
             "targets": "node 8",
             "useBuiltIns": "entry",
             "corejs": 3
-        }]
+        }],
+        "@babel/preset-typescript"
     ],
     "plugins": [],
     "comments": true,

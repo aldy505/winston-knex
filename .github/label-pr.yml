@@ -1,0 +1,10 @@
+- regExp: ".src\\**+$"
+  labels: ["core"]
+- regExp: ".test\\**+$"
+  labels: ["test"]
+- regExp: ".*\\.md+$"
+  labels: ["documentation"]
+- regExp: "^(package\\.json)$"
+  labels: ["dependencies"]
+  - regExp: "^(.babelrc|.env.test|.eslintrc.js|.prettierrc.js|.gitignore|rollup.config.js|tsconfig.json)$"
+  labels: ["configuration"]

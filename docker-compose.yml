@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:13.1-alpine
+    restart: always
+    environment: 
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: winston_knex
+    ports:
+      - "5432:5432"
+  mysql:
+    image: mysql:8.0.23
+    restart: always
+    environment: 
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: winston_knex
+    ports:
+      - "3307:3306"

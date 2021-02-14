@@ -2,19 +2,32 @@
   "name": "winston-knex",
   "version": "0.1.1",
   "description": "Winston Transport for Knex JS",
-  "main": "build/index.js",
+  "main": "build/index.cjs",
+  "module": "build/index.js",
   "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "require": "./build/index.cjs"
+    },
+    "./package.json": "./package.json",
+    "./": "./"
+  },
   "files": [
+    "build/index.cjs",
     "build/index.js",
     "build/index.d.ts",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "build": "babel src/ --out-dir build/ --copy-files",
+    "build": "rollup -c",
     "lint": "eslint --ignore-path .gitignore src/",
-    "test": "nyc --reporter=text --reporter lcov npm run test:mocha",
-    "test:mocha": "mocha test/*.js test/**/*.js --exit"
+    "lint:fix": "eslint --fix --ignore-path .gitignore src/",
+    "coverage": "nyc npm run mocha",
+    "mocha": "mocha -r ts-node/register test/**/*.spec.ts",
+    "pretest": "npm run lint && npm run build",
+    "test": "npm run coverage"
   },
   "repository": {
     "type": "git",
@@ -41,29 +54,41 @@
     "lib": "src/",
     "test": "test/"
   },
+  "dependencies": {
+    "knex": "^0.21.17",
+    "winston": "^3.3.3",
+    "winston-transport": "^4.4.0"
+  },
   "devDependencies": {
-    "@babel/cli": "^7.12.10",
-    "@babel/core": "^7.12.10",
-    "@babel/preset-env": "^7.12.11",
+    "@babel/cli": "^7.12.13",
+    "@babel/core": "^7.12.13",
+    "@babel/preset-env": "^7.12.13",
+    "@babel/preset-typescript": "^7.12.13",
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@rollup/plugin-babel": "^5.2.3",
+    "@rollup/plugin-node-resolve": "^11.1.1",
+    "@rollup/plugin-typescript": "^8.1.1",
     "@types/chai": "^4.2.14",
+    "@types/dotenv": "^8.2.0",
     "@types/mocha": "^8.2.0",
-    "@types/node": "^14.14.22",
+    "@types/mysql": "^2.15.17",
+    "@types/node": "^14.14.27",
+    "@types/pg": "^7.14.9",
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0",
     "abstract-winston-transport": "^0.5.1",
-    "chai": "^4.2.0",
+    "chai": "^4.3.0",
     "dotenv": "^8.2.0",
-    "eslint": "^7.18.0",
+    "eslint": "^7.19.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
     "mocha": "^8.2.1",
     "mysql": "^2.18.1",
     "nyc": "^15.1.0",
     "pg": "^8.5.1",
-    "sqlite3": "^5.0.1",
+    "rollup": "^2.38.5",
+    "source-map-support": "^0.5.19",
+    "ts-node": "^9.1.1",
     "typescript": "^4.1.3"
-  },
-  "dependencies": {
-    "knex": "^0.21.16",
-    "winston": "^3.3.3",
-    "winston-transport": "^4.4.0"
   }
 }
