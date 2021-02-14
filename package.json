@@ -1,6 +1,6 @@
 {
   "name": "winston-knex",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Winston Transport for Knex JS",
   "main": "build/index.cjs",
   "module": "build/index.js",
@@ -56,10 +56,8 @@
   },
   "dependencies": {
     "knex": "^0.21.17",
+    "winston": "^3.3.3",
     "winston-transport": "^4.4.0"
-  },
-  "peerDependencies": {
-    "winston": "^3.3.3"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.16",
