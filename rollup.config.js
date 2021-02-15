@@ -17,7 +17,7 @@ export default {
   ],
   external: ['winston-transport', 'knex'],
   plugins: [
-    typescript({ exclude: ['./test/**/*.ts'] }),
+    typescript({ include: ['./src/**/*.ts'], exclude: ['./test/**/*.ts'], clean: true }),
     nodeResolve(),
     babel({ extensions: [...DEFAULT_EXTENSIONS, '.ts', '.tsx'], babelHelpers: 'bundled' }),
   ],

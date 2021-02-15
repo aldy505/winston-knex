@@ -26,7 +26,7 @@
     "lint:fix": "eslint --fix --ignore-path .gitignore src/",
     "coverage": "nyc npm run mocha",
     "mocha": "mocha -r ts-node/register test/**/*.spec.ts",
-    "pretest": "npm run lint && npm run build",
+    "pretest": "npm run lint:fix && npm run build",
     "test": "npm run coverage"
   },
   "repository": {
@@ -48,7 +48,7 @@
   },
   "homepage": "https://github.com/aldy505/winston-knex#readme",
   "engines": {
-    "node": ">=8"
+    "node": ">=10"
   },
   "directories": {
     "lib": "src/",
