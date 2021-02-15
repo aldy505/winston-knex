@@ -23,7 +23,7 @@ jobs:
       - name: Installling dependencies
         run: npm install
       - name: Lint check
-        run: npm run lint
+        run: npm run lint:fix
       - name: Building code
         run: npm run build
       - name: Initialize CodeQL
