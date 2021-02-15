@@ -1,4 +1,5 @@
-name: "Codecov Code Coverage"
+name: Codecov Code Coverage
+
 on:
   push:
     branches: [ "*" ]
@@ -7,8 +8,9 @@ on:
 
 jobs:
   codecov-code-coverage:
-    - name: Codecov Code Coverage
-    - runs-on: ubuntu-latest
+    name: Codecov Code Coverage
+    runs-on: ubuntu-latest
+    steps:
     - name: Checkout repository
       uses: actions/checkout@v2
     - name: Setup MySQL
@@ -24,7 +26,7 @@ jobs:
         postgresql user: postgres
         postgresql password: password
     - name: Setup Node.js
-      uses: actions/setup-node@v2.1.4
+      uses: actions/setup-node@v2
       with:
         node-version: ">=14"
     - name: Installing dependencies

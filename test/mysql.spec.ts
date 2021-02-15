@@ -31,13 +31,17 @@ describe('mysql test', () => {
     done();
   });
 
-  it('(with callback) should be able to write to db', (done) => {
-    const logMessage = `This is a mysql info test with callback - ${Date.now()}`;
-    return logger.info(logMessage, (err, level, message, meta) => {
-        console.log(err, level, message, meta)
-      assert.isDefined(message);
-      done();
+  it('(with callback) should be able to write to db', async () => {
+    try {
+      const logMessage = `This is a postgres info test with callback - ${Date.now()}`;
+      await logger.info(logMessage, (...info) => {
+        assert.isDefined(info);
       });
+      const res = await db('winston_knex').where({ message: logMessage }).select('message');
+      Promise.resolve(assert.equal(res[0]?.message, logMessage));
+    } catch (err) {
+      Promise.reject(err);
+    }
   });
 
   it('should be able to query logs', (done) => {
@@ -50,19 +54,14 @@ describe('mysql test', () => {
     });
   });
 
-  it('should create a table called winston_knex', (done) => {
-    setImmediate(() => {
+  it('should create a table called winston_knex', async () => {
+    try {
       const transport = new KnexTransport(options);
-      transport.init();
-    });
-    return db.transaction((trx) => trx.schema
-      .hasTable('winston_knex'))
-      .then((res) => {
-        assert.isTrue(res);
-        done();
-      })
-      .catch((err) => {
-        done(err);
-      });
+      await transport.init();
+      const res = await db.schema.hasTable('winston_knex');
+      Promise.resolve(assert.isTrue(res));
+    } catch (err) {
+      Promise.reject(err);
+    }
   });
 });

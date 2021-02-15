@@ -27,41 +27,21 @@ describe('postgres test', () => {
 
   it('(without callback) should be able to write to db', (done) => {
     const logMessage = `This is a postgres error test - ${Date.now()}`;
-    logger.error(logMessage);
-    return db.transaction((trx) => trx('winston_knex')
-      .where({ message: logMessage })
-      .select()
-      .transacting(trx)
-      .then(trx.commit)
-      .catch(trx.rollback))
-      .then((res) => {
-        console.log(res);
-        assert.propertyVal(res[0], 'message', logMessage);
-        done();
-      })
-      .catch((err) => {
-        done(err);
-      });
+    assert(logger.error(logMessage));
+    done();
   });
 
-  it('(with callback) should be able to write to db', (done) => {
-    const logMessage = `This is a postgres info test with callback - ${Date.now()}`;
-    logger.info(logMessage, (info) => {
-      assert.isDefined(info);
-    });
-    return db.transaction((trx) => trx('winston_knex')
-      .where({ message: logMessage })
-      .select()
-      .transacting(trx)
-      .then(trx.commit)
-      .catch(trx.rollback))
-      .then((res) => {
-        assert.propertyVal(res[0], 'message', logMessage);
-        done();
-      })
-      .catch((err) => {
-        done(err);
+  it('(with callback) should be able to write to db', async () => {
+    try {
+      const logMessage = `This is a postgres info test with callback - ${Date.now()}`;
+      await logger.info(logMessage, (...info) => {
+        assert.isDefined(info);
       });
+      const res = await db('winston_knex').where({ message: logMessage }).select('message');
+      Promise.resolve(assert.equal(res[0]?.message, logMessage));
+    } catch (err) {
+      Promise.reject(err);
+    }
   });
 
   it('should be able to query logs', (done) => {
@@ -74,16 +54,14 @@ describe('postgres test', () => {
     });
   });
 
-  it('should create a table called winston_knex', (done) => {
-    const transport = new KnexTransport(options);
-    transport.init();
-    return db.transaction((trx) => trx.schema.hasTable('winston_knex'))
-      .then((res) => {
-        assert.isTrue(res);
-        done();
-      })
-      .catch((err) => {
-        done(err);
-      });
+  it('should create a table called winston_knex', async () => {
+    try {
+      const transport = new KnexTransport(options);
+      await transport.init();
+      const res = await db.schema.hasTable('winston_knex');
+      Promise.resolve(assert.isTrue(res));
+    } catch (err) {
+      Promise.reject(err);
+    }
   });
 });

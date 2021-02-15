@@ -3,6 +3,8 @@ import { DEFAULT_EXTENSIONS } from '@babel/core';
 import { babel } from '@rollup/plugin-babel';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
+const override = { compilerOptions: { module: 'ESNext', rootDir: './src' } };
+
 export default {
   input: 'src/index.ts',
   output: [
@@ -17,7 +19,9 @@ export default {
   ],
   external: ['winston-transport', 'knex'],
   plugins: [
-    typescript({ include: ['./src/**/*.ts'], exclude: ['./test/**/*.ts'], clean: true }),
+    typescript({
+      include: ['./src/**/*.ts'], exclude: ['./test/**/*.ts'], clean: true, tsconfigOverride: override,
+    }),
     nodeResolve(),
     babel({ extensions: [...DEFAULT_EXTENSIONS, '.ts', '.tsx'], babelHelpers: 'bundled' }),
   ],
