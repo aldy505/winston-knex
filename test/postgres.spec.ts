@@ -2,7 +2,8 @@ import { resolve } from 'path';
 import dotenv from 'dotenv';
 import winston from 'winston';
 import knex from 'knex';
-import { assert } from 'chai';
+import { assert, expect } from 'chai';
+import testSuite from 'abstract-winston-transport';
 import KnexTransport from '../src/index';
 
 dotenv.config({ path: resolve(__dirname, './../.env.test') });
@@ -12,56 +13,39 @@ const options = {
   connection: String(process.env.POSTGRES_CONNECTION_URL),
   tableName: 'winston_knex',
 };
-
-const db = knex(options);
-
-const logger = winston.createLogger({
-  transports: [new KnexTransport(options)],
-});
+let db;
+let logger;
 
 describe('postgres test', () => {
-  it('should output a logger instance', (done) => {
-    assert.isDefined(logger);
-    done();
-  });
-
-  it('(without callback) should be able to write to db', (done) => {
-    const logMessage = `This is a postgres error test - ${Date.now()}`;
-    assert(logger.error(logMessage));
-    done();
-  });
-
-  it('(with callback) should be able to write to db', async () => {
-    try {
-      const logMessage = `This is a postgres info test with callback - ${Date.now()}`;
-      await logger.info(logMessage, (...info) => {
-        assert.isDefined(info);
-      });
-      const res = await db('winston_knex').where({ message: logMessage }).select('message');
-      Promise.resolve(assert.equal(res[0]?.message, logMessage));
-    } catch (err) {
-      Promise.reject(err);
-    }
-  });
-
-  it('should be able to query logs', (done) => {
-    logger.query({
-      fields: ['message', 'level'],
-    }, (err, result) => {
-      if (err) done(err);
-      assert.isDefined(result);
-      done();
+  before(() => {
+    db = knex(options);
+    logger = winston.createLogger({
+      transports: [new KnexTransport(options)],
     });
   });
 
-  it('should create a table called winston_knex', async () => {
+  it('should output a logger instance', (done) => {
+    assert.isDefined(logger);
+    expect(logger.readable).to.be.equal(true);
+    expect(logger.writable).to.be.equal(true);
+    done();
+  });
+
+  it('should have a table called winston_knex', async () => {
     try {
-      const transport = new KnexTransport(options);
-      await transport.init();
       const res = await db.schema.hasTable('winston_knex');
-      Promise.resolve(assert.isTrue(res));
+      expect(res).to.be.equal(true);
+      return Promise.resolve();
     } catch (err) {
-      Promise.reject(err);
+      return Promise.reject(err);
     }
   });
+});
+
+testSuite({
+  name: 'KnexTransport',
+  Transport: KnexTransport,
+  query: false,
+  stream: false,
+  construct: options,
 });

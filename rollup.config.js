@@ -3,7 +3,7 @@ import { DEFAULT_EXTENSIONS } from '@babel/core';
 import { babel } from '@rollup/plugin-babel';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
-const override = { compilerOptions: { module: 'ESNext', rootDir: './src' } };
+const override = { compilerOptions: { module: 'ESNext', rootDir: '.' } };
 
 export default {
   input: 'src/index.ts',
@@ -13,7 +13,7 @@ export default {
       format: 'cjs',
     },
     {
-      dir: 'build',
+      file: 'build/index.js',
       format: 'esm',
     },
   ],

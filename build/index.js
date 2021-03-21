@@ -1,4 +1,4 @@
-import knex from 'knex';
+import { knex } from 'knex';
 import TransportStream from 'winston-transport';
 
 /**
@@ -55,7 +55,7 @@ class KnexTransport extends TransportStream {
         return client.transaction(trx => trx.schema.createTable(tableName, table => {
           table.timestamp('timestamp').defaultTo(client.fn.now());
           table.string('level');
-          table.string('message');
+          table.text('message');
           table.json('meta');
         }).transacting(trx).then(trx.commit).catch(trx.rollback)).then(() => Promise.resolve(true)).catch(e => Promise.reject(e));
       }
@@ -66,13 +66,13 @@ class KnexTransport extends TransportStream {
     }
   }
   /**
-       * Core logging
-       * @param {Object} info Logs arguments
-       * @param {String} info.level Logs level
-       * @param {*} info.message Logs message
-       * @param {*} info.meta Logs meta
-       * @param {Function} callback Continuation to respond to when complete
-       */
+   * Core logging
+   * @param {Object} info Logs arguments
+   * @param {String} info.level Logs level
+   * @param {*} info.message Logs message
+   * @param {*} info.meta Logs meta
+   * @param {Function} callback Continuation to respond to when complete
+   */
 
 
   log(info, callback) {
@@ -97,52 +97,6 @@ class KnexTransport extends TransportStream {
         this.emit('error', error);
         callback(error, false);
       });
-    });
-  }
-
-  query(options, callback) {
-    const {
-      client,
-      tableName
-    } = this;
-    const sql = ['SELECT'];
-
-    if (options.fields && typeof options.fields === 'string') {
-      sql.push(options.fields);
-    } else if (options.fields && Array.isArray(options.fields)) {
-      sql.push(options.fields.join(', '));
-    } else if (!options.fields) {
-      sql.push('*');
-    }
-
-    sql.push('FROM', tableName, 'WHERE');
-
-    if (options.from && options.until) {
-      sql.push(`(timestamp BETWEEN ${options.from} AND ${options.until})`);
-    } else if (options.from && !options.until) {
-      sql.push(`(timestamp >= ${options.from})`);
-    } else if (options.until && !options.from) {
-      sql.push(`(timestamp <= ${options.until})`);
-    } else if (!options.until && !options.from) {
-      sql.push('1');
-    }
-
-    if (options.limit && options.start) {
-      sql.push(`LIMIT ${Number(options.limit)} OFFSET ${Number(options.start)}`);
-    } else if (!options.limit && options.start) {
-      sql.push(`LIMIT 18446744073709551615 OFFSET ${Number(options.start)}`);
-    } else if (!options.start && options.limit) {
-      sql.push(`LIMIT ${options.limit}`);
-    }
-
-    if (options.order) {
-      sql.push(`ORDER BY timestamp ${options.order.toUpperCase}`);
-    }
-
-    return client.transaction(trx => trx.raw(sql.join(' '))).then(res => {
-      callback(null, res);
-    }).catch(err => {
-      callback(err);
     });
   }
 

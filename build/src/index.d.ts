@@ -4,19 +4,19 @@
  * @license MIT
  * @author Reinaldy Rafli <hi@reinaldyrafli.com> (https://github.com/aldy505)
  */
-import knex, { Client, ConnectionConfigProvider, MigratorConfig, PoolConfig, SeederConfig, StaticConnectionConfig } from 'knex';
+import { Knex } from 'knex';
 import TransportStream from 'winston-transport';
 interface KnexConfig<SV extends {} = any> {
     debug?: boolean;
-    client?: string | typeof Client;
+    client?: string | typeof Knex.Client;
     dialect?: string;
     version?: string;
-    connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
-    pool?: PoolConfig;
-    migrations?: MigratorConfig;
+    connection?: string | Knex.StaticConnectionConfig | Knex.ConnectionConfigProvider;
+    pool?: Knex.PoolConfig;
+    migrations?: Knex.MigratorConfig;
     postProcessResponse?: (result: any, queryContext: any) => any;
     wrapIdentifier?: (value: string, origImpl: (value: string) => string, queryContext: any) => string;
-    seeds?: SeederConfig<SV>;
+    seeds?: Knex.SeederConfig<SV>;
     acquireConnectionTimeout?: number;
     useNullAsDefault?: boolean;
     searchPath?: string | readonly string[];
@@ -28,21 +28,12 @@ interface KnexTransportOptions extends KnexConfig, TransportStream.TransportStre
     silent?: boolean;
     tableName?: string;
 }
-interface QueryOptions {
-    from?: Date;
-    until?: Date;
-    limit?: number;
-    start?: number;
-    order?: 'asc' | 'desc';
-    fields?: any;
-    rows?: number;
-}
 declare type WinstonLogCallback = (err?: any, res?: any) => void;
 declare class KnexTransport extends TransportStream {
     name: string;
     label: string;
     tableName: string;
-    client: knex<any, unknown[]>;
+    client: Knex<any, unknown[]>;
     /**
    * Constructor for KnexTransport
    * @constructor
@@ -57,15 +48,14 @@ declare class KnexTransport extends TransportStream {
     constructor(options?: KnexTransportOptions);
     init(): Promise<boolean | string>;
     /**
-         * Core logging
-         * @param {Object} info Logs arguments
-         * @param {String} info.level Logs level
-         * @param {*} info.message Logs message
-         * @param {*} info.meta Logs meta
-         * @param {Function} callback Continuation to respond to when complete
-         */
-    log(info: any, callback: WinstonLogCallback): void;
-    query(options: QueryOptions, callback: WinstonLogCallback): Promise<void>;
+     * Core logging
+     * @param {Object} info Logs arguments
+     * @param {String} info.level Logs level
+     * @param {*} info.message Logs message
+     * @param {*} info.meta Logs meta
+     * @param {Function} callback Continuation to respond to when complete
+     */
+    log(info: Record<string, any>, callback: WinstonLogCallback): void;
 }
 declare module 'winston' {
     interface Transports {

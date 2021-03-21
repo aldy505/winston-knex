@@ -5,26 +5,18 @@
  * @author Reinaldy Rafli <hi@reinaldyrafli.com> (https://github.com/aldy505)
  */
 
-import knex, {
-  Client,
-  ConnectionConfigProvider,
-  MigratorConfig,
-  PoolConfig,
-  SeederConfig,
-  StaticConnectionConfig,
-  Transaction,
-} from 'knex';
+import { knex, Knex } from 'knex';
 import TransportStream from 'winston-transport';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 interface KnexConfig<SV extends {} = any> {
   debug?: boolean;
-  client?: string | typeof Client;
+  client?: string | typeof Knex.Client;
   dialect?: string;
   version?: string;
-  connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
-  pool?: PoolConfig;
-  migrations?: MigratorConfig;
+  connection?: string | Knex.StaticConnectionConfig | Knex.ConnectionConfigProvider;
+  pool?: Knex.PoolConfig;
+  migrations?: Knex.MigratorConfig;
   postProcessResponse?: (result: any, queryContext: any) => any;
   wrapIdentifier?: (
     value: string,
@@ -32,7 +24,7 @@ interface KnexConfig<SV extends {} = any> {
     origImpl: (value: string) => string,
     queryContext: any
   ) => string;
-  seeds?: SeederConfig<SV>;
+  seeds?: Knex.SeederConfig<SV>;
   acquireConnectionTimeout?: number;
   useNullAsDefault?: boolean;
   searchPath?: string | readonly string[];
@@ -65,7 +57,7 @@ class KnexTransport extends TransportStream {
 
   public tableName: string;
 
-  public client: knex<any, unknown[]>;
+  public client: Knex<any, unknown[]>;
 
   /**
  * Constructor for KnexTransport
@@ -104,10 +96,10 @@ class KnexTransport extends TransportStream {
       const checkTable = await client.schema.hasTable(tableName);
       if (!checkTable) {
         return client.transaction(
-          (trx: Transaction) => trx.schema.createTable(tableName, (table) => {
+          (trx: Knex.Transaction) => trx.schema.createTable(tableName, (table) => {
             table.timestamp('timestamp').defaultTo(client.fn.now());
             table.string('level');
-            table.string('message');
+            table.text('message');
             table.json('meta');
           })
             .transacting(trx)
@@ -124,18 +116,18 @@ class KnexTransport extends TransportStream {
   }
 
   /**
-       * Core logging
-       * @param {Object} info Logs arguments
-       * @param {String} info.level Logs level
-       * @param {*} info.message Logs message
-       * @param {*} info.meta Logs meta
-       * @param {Function} callback Continuation to respond to when complete
-       */
-  public log(info: any, callback: WinstonLogCallback): void {
+   * Core logging
+   * @param {Object} info Logs arguments
+   * @param {String} info.level Logs level
+   * @param {*} info.message Logs message
+   * @param {*} info.meta Logs meta
+   * @param {Function} callback Continuation to respond to when complete
+   */
+  public log(info: Record<string, any>, callback: WinstonLogCallback): void {
     setImmediate(() => {
       const { level, message, meta } = info;
       const { client, tableName } = this;
-      return client.transaction((trx: Transaction) => trx(tableName)
+      return client.transaction((trx: Knex.Transaction) => trx(tableName)
         .insert({ level, message, meta })
         .transacting(trx)
         .then(trx.commit)
@@ -148,8 +140,8 @@ class KnexTransport extends TransportStream {
       });
     });
   }
-
-  public query(options: QueryOptions, callback: WinstonLogCallback) {
+  /*
+  public query(options: QueryOptions, callback: WinstonLogCallback): Promise<void> {
     const { client, tableName } = this;
 
     const sql = ['SELECT'];
@@ -186,7 +178,7 @@ class KnexTransport extends TransportStream {
       sql.push(`ORDER BY timestamp ${options.order.toUpperCase}`);
     }
 
-    return client.transaction((trx: Transaction) => trx.raw(sql.join(' ')))
+    return client.transaction((trx: Knex.Transaction) => trx.raw(sql.join(' ')))
       .then((res) => {
         callback(null, res);
       })
@@ -194,6 +186,7 @@ class KnexTransport extends TransportStream {
         callback(err);
       });
   }
+  */
 }
 
 declare module 'winston' {
