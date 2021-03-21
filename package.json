@@ -1,6 +1,6 @@
 {
   "name": "winston-knex",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Winston Transport for Knex JS",
   "main": "build/index.cjs",
   "module": "build/index.js",
