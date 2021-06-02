@@ -5,10 +5,9 @@
  * @author Reinaldy Rafli <hi@reinaldyrafli.com> (https://github.com/aldy505)
  */
 
-import { knex, Knex } from 'knex';
+import {knex, Knex} from 'knex';
 import TransportStream from 'winston-transport';
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 interface KnexConfig<SV extends {} = any> {
   debug?: boolean;
   client?: string | typeof Knex.Client;
@@ -17,12 +16,11 @@ interface KnexConfig<SV extends {} = any> {
   connection?: string | Knex.StaticConnectionConfig | Knex.ConnectionConfigProvider;
   pool?: Knex.PoolConfig;
   migrations?: Knex.MigratorConfig;
-  postProcessResponse?: (result: any, queryContext: any) => any;
+  postProcessResponse?: (_result: any, _queryContext: any) => any;
   wrapIdentifier?: (
-    value: string,
-    // eslint-disable-next-line no-shadow
-    origImpl: (value: string) => string,
-    queryContext: any
+    _value: string,
+    _origImpl: (_value: string) => string,
+    _queryContext: any
   ) => string;
   seeds?: Knex.SeederConfig<SV>;
   acquireConnectionTimeout?: number;
@@ -44,11 +42,11 @@ interface QueryOptions {
   limit?: number,
   start?: number,
   order?: 'asc' | 'desc',
-  fields?: any,
+  fields?: string | Array<string>,
   rows?: number
 }
 
-type WinstonLogCallback = (err?: any, res?: any) => void;
+type WinstonLogCallback = (_err?: any, _res?: any) => void;
 
 class KnexTransport extends TransportStream {
   public name: string;
@@ -70,48 +68,57 @@ class KnexTransport extends TransportStream {
  * @param {String|Object} options.connection Database connection URI
  * @param {String} options.tableName Database table name (defaults to logs)
  */
-  public constructor(options: KnexTransportOptions = {}) {
+  constructor(options: KnexTransportOptions = {}) {
     super(options);
-    TransportStream.call(this, options);
+
     this.name = 'KnexTransport';
     this.level = options.level || 'info';
     this.label = options.label || '';
     this.silent = options.silent || false;
-    const { connection } = options;
+
+    const {connection} = options;
     if (!options.connection) {
       throw new Error('You should provide database connection.');
     }
+
     this.client = knex({
       client: options.client,
-      connection,
+      connection
     });
     this.tableName = options.tableName || 'logs';
-
-    this.init();
+    this.client.schema.hasTable(this.tableName)
+      .then(exists => {
+        if (!exists) {
+          this.init()
+            .then(() => null)
+            .catch(e => {
+              throw e;
+            });
+        }
+      })
+      .catch(e => {
+        throw e;
+      });
   }
 
-  public async init(): Promise<boolean | string> {
+  async init(): Promise<boolean> {
     try {
-      const { client, tableName } = this;
-      const checkTable = await client.schema.hasTable(tableName);
-      if (!checkTable) {
-        return client.transaction(
-          (trx: Knex.Transaction) => trx.schema.createTable(tableName, (table) => {
+      const {client, tableName} = this;
+      await client.transaction((trx: Knex.Transaction) => {
+        return trx.schema
+          .createTable(tableName, table => {
             table.timestamp('timestamp').defaultTo(client.fn.now());
             table.string('level');
             table.text('message');
             table.json('meta');
           })
-            .transacting(trx)
-            .then(trx.commit)
-            .catch(trx.rollback),
-        )
-          .then(() => Promise.resolve(true))
-          .catch((e) => Promise.reject(e));
-      }
+          .transacting(trx)
+          .then(trx.commit)
+          .catch(trx.rollback);
+      });
       return Promise.resolve(true);
-    } catch (e) {
-      return Promise.reject(e);
+    } catch (error) {
+      return Promise.reject(error);
     }
   }
 
@@ -123,70 +130,42 @@ class KnexTransport extends TransportStream {
    * @param {*} info.meta Logs meta
    * @param {Function} callback Continuation to respond to when complete
    */
-  public log(info: Record<string, any>, callback: WinstonLogCallback): void {
-    setImmediate(() => {
-      const { level, message, meta } = info;
-      const { client, tableName } = this;
-      return client.transaction((trx: Knex.Transaction) => trx(tableName)
-        .insert({ level, message, meta })
+  log(info: Record<string, any>, callback: WinstonLogCallback): Promise<void> {
+    const {level, message, meta} = info;
+    const {client, tableName} = this;
+    return client
+      .transaction((trx: Knex.Transaction) => trx(tableName)
+        .insert({level, message, meta})
         .transacting(trx)
         .then(trx.commit)
-        .catch(trx.rollback)).then(() => {
+        .catch(trx.rollback))
+      .then(() => {
         this.emit('logged', info);
         callback(null, true);
-      }).catch((error) => {
+      })
+      .catch(error => {
         this.emit('error', error);
         callback(error, false);
       });
-    });
   }
-  /*
-  public query(options: QueryOptions, callback: WinstonLogCallback): Promise<void> {
-    const { client, tableName } = this;
 
-    const sql = ['SELECT'];
+  query(options: QueryOptions, callback: WinstonLogCallback): Promise<void> {
+    const {client, tableName} = this;
 
-    if (options.fields && typeof options.fields === 'string') {
-      sql.push(options.fields);
-    } else if (options.fields && Array.isArray(options.fields)) {
-      sql.push(options.fields.join(', '));
-    } else if (!options.fields) {
-      sql.push('*');
-    }
-
-    sql.push('FROM', tableName, 'WHERE');
-
-    if (options.from && options.until) {
-      sql.push(`(timestamp BETWEEN ${options.from} AND ${options.until})`);
-    } else if (options.from && !options.until) {
-      sql.push(`(timestamp >= ${options.from})`);
-    } else if (options.until && !options.from) {
-      sql.push(`(timestamp <= ${options.until})`);
-    } else if (!options.until && !options.from) {
-      sql.push('1');
-    }
-
-    if (options.limit && options.start) {
-      sql.push(`LIMIT ${Number(options.limit)} OFFSET ${Number(options.start)}`);
-    } else if (!options.limit && options.start) {
-      sql.push(`LIMIT 18446744073709551615 OFFSET ${Number(options.start)}`);
-    } else if (!options.start && options.limit) {
-      sql.push(`LIMIT ${options.limit}`);
-    }
-
-    if (options.order) {
-      sql.push(`ORDER BY timestamp ${options.order.toUpperCase}`);
-    }
-
-    return client.transaction((trx: Knex.Transaction) => trx.raw(sql.join(' ')))
-      .then((res) => {
+    return client.transaction((trx: Knex.Transaction) => trx(tableName)
+      .select(options?.fields || '*')
+      .whereBetween('timestamp', [options?.from || 0, options?.until || Number.MAX_SAFE_INTEGER])
+      .limit(options?.limit || Number.MAX_SAFE_INTEGER)
+      .offset(options?.start || 0)
+      .orderBy('timestamp', options?.order || 'asc')
+      .then(res => {
         callback(null, res);
       })
-      .catch((err) => {
+      .catch(err => {
         callback(err);
-      });
+      })
+    );
   }
-  */
 }
 
 declare module 'winston' {

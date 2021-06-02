@@ -1,4 +1,4 @@
-name: Codecov Code Coverage
+name: PostgreSQL
 
 on:
   push:
@@ -7,37 +7,48 @@ on:
     branches: [ "*" ]
 
 jobs:
-  codecov-code-coverage:
-    name: Codecov Code Coverage
+  postgres:
+    name: PostgreSQL
     runs-on: ubuntu-latest
+    container: node:14.17.0
+    services:
+      postgres:
+        image: postgres:13.3
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: winston
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      mysql:
+        image: mysql:8.0.25
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: winston
+        ports:
+          - 3306:3306
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: Setup MySQL
-      uses: mirromutth/mysql-action@v1.1
-      with:
-        mysql database: 'winston_knex'
-        mysql root password: 'password'
-    - name: Setup PostgreSQL
-      uses: harmon758/postgresql-action@v1
-      with:
-        postgresql version: '13'
-        postgresql db: 'winston_knex'
-        postgresql user: postgres
-        postgresql password: password
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: ">=14"
-    - name: Installing dependencies
-      run: |
-        npm install
-        npm audit
-    - name: Running test
-      run: npm run coverage
-    - name: Upload to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v2
 
+      - name: Installling dependencies
+        run: yarn
+
+      - name: Lint check
+        run: yarn lint:fix
+
+      - name: Building code
+        run: yarn build
+
+      - name: Postgres Test
+        run: yarn test
+        env:
+          MYSQL_CONNECTION_URL: mysql://root:password@mysql:3306/winston
+          POSTGRES_CONNECTION_URL: postgresql://postgres:password@localhost:5432/winston
       
+      - name: Upload to Codecov
+        run: bash <(curl -s https://codecov.io/bash)

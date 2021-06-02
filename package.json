@@ -2,22 +2,22 @@
   "name": "winston-knex",
   "version": "0.2.0",
   "description": "Winston Transport for Knex JS",
-  "main": "build/index.cjs",
-  "module": "build/index.js",
-  "types": "build/src/index.d.ts",
-  "typings": "build/src/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/src/index.d.ts",
+  "typings": "dist/src/index.d.ts",
   "exports": {
     ".": {
-      "import": "./build/index.js",
-      "require": "./build/index.cjs"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./package.json": "./package.json",
     "./": "./"
   },
   "files": [
-    "build/index.cjs",
-    "build/index.js",
-    "build/src/index.d.ts",
+    "dist/index.cjs",
+    "dist/index.js",
+    "dist/src/index.d.ts",
     "README.md",
     "LICENSE"
   ],
@@ -25,10 +25,12 @@
     "build": "rollup -c",
     "lint": "eslint --ext .js,.ts --ignore-path .gitignore .",
     "lint:fix": "eslint --fix --ext .js,.ts --ignore-path .gitignore .",
-    "coverage": "nyc npm run mocha",
-    "mocha": "mocha -r ts-node/register test/**/*.spec.ts --exit",
-    "pretest": "rimraf build && npm run lint:fix && npm run build",
-    "test": "npm run coverage"
+    "coverage": "nyc npm run uvu",
+    "ava": "ava -r ts-node/register -s test/*.spec.ts",
+    "pretest": "rimraf build && npm run lint && npm run build",
+    "test": "npm run coverage",
+    "commit": "cz",
+    "precommit": "yarn lint:fix"
   },
   "repository": {
     "type": "git",
@@ -55,6 +57,19 @@
     "lib": "src/",
     "test": "test/"
   },
+  "ava": {
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
   "dependencies": {
     "knex": "^0.95.6",
     "winston-transport": "^4.4.0"
@@ -73,6 +88,9 @@
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@typescript-eslint/parser": "^4.26.0",
     "abstract-winston-transport": "0.5.1",
+    "ava": "^3.15.0",
+    "commitizen": "^4.2.4",
+    "cz-conventional-changelog": "^3.3.0",
     "dotenv": "10.0.0",
     "eslint": "7.27.0",
     "eslint-config-xo-space": "^0.27.0",
@@ -86,7 +104,6 @@
     "ts-node": "10.0.0",
     "tslib": "2.2.0",
     "typescript": "4.3.2",
-    "uvu": "^0.5.1",
     "winston": "3.3.3"
   }
 }

@@ -1,50 +1,120 @@
-import { resolve } from 'path';
+import {resolve} from 'path';
 import dotenv from 'dotenv';
 import winston from 'winston';
-import { knex } from 'knex';
-import { assert, expect } from 'chai';
-import testSuite from 'abstract-winston-transport';
+import {knex} from 'knex';
+import test from 'ava';
 import KnexTransport from '../src/index';
 
-dotenv.config({ path: resolve(__dirname, './../.env.test') });
+dotenv.config({path: resolve(__dirname, './../.env')});
 
 const options = {
   client: 'mysql2',
   connection: String(process.env.MYSQL_CONNECTION_URL),
-  tableName: 'winston_knex',
+  tableName: 'logger'
 };
-let db;
-let logger;
 
-describe('mysql test', () => {
-  before(() => {
-    db = knex(options);
-    logger = winston.createLogger({
-      transports: [new KnexTransport(options)],
-    });
-  });
-  it('should output a logger instance', (done) => {
-    assert.isDefined(logger);
-    expect(logger.readable).to.be.equal(true);
-    expect(logger.writable).to.be.equal(true);
-    done();
-  });
+const db = knex(options);
 
-  it('should have a table called winston_knex', async () => {
-    try {
-      const res = await db.schema.hasTable('winston_knex');
-      expect(res).to.be.equal(true);
-      return Promise.resolve();
-    } catch (err) {
-      return Promise.reject(err);
+test.beforeEach(async t => {
+  try {
+    // Check database status
+    const trxProvider = db.transactionProvider();
+    const trx = await trxProvider();
+    await trx.raw('SHOW STATUS WHERE `variable_name` = \'Max_used_connections\';');
+
+    // Check if table exists, if true, we drop the table
+    const trx2 = await trxProvider();
+    const exists = await trx2.schema.hasTable(options.tableName);
+    if (exists) {
+      await trx2.schema.dropTable(options.tableName);
+      console.log('table dropped');
+      t.pass();
     }
-  });
+
+    t.pass();
+  } catch (error) {
+    t.fail(JSON.stringify(error));
+  }
 });
 
-testSuite({
-  name: 'KnexTransport',
-  Transport: KnexTransport,
-  query: false,
-  stream: false,
-  construct: options,
+test.serial('should fire a log to the database', async t => {
+  try {
+    const logger = winston.createLogger({
+      level: 'info',
+      transports: [
+        new KnexTransport(options)
+      ]
+    });
+
+    const logMessage = [
+      'this is info log',
+      'this is a warn log',
+      'this is an error log'
+    ];
+
+    console.log('mysql #1 - inserting log messages');
+    logger.info(logMessage[0]);
+    logger.warn(logMessage[1]);
+    logger.error(logMessage[2]);
+
+    const trxProvider = db.transactionProvider();
+    const trx = await trxProvider();
+
+    console.log('mysql #1 - checking log message from db');
+
+    const logs = await trx(options.tableName).select('*').orderBy('timestamp', 'asc');
+    console.log(logs);
+    for (let i = 0; i < logs.length; i++) {
+      const {message} = logs[i];
+      t.is(message, logMessage[i]);
+    }
+  } catch (error) {
+    t.fail(JSON.stringify(error));
+  }
+});
+
+test.serial('should fire an object log to the database', async t => {
+  try {
+    const logger = winston.createLogger({
+      level: 'info',
+      transports: [
+        new KnexTransport(options)
+      ]
+    });
+
+    const logMessage = [
+      {
+        level: 'info',
+        message: 'this is info log'
+      },
+      {
+        level: 'warn',
+        message: 'this is a warn log'
+      },
+      {
+        level: 'error',
+        message: 'this is an error log'
+      }
+    ];
+
+    console.log('mysql #2 - inserting log messages');
+    logger.log(logMessage[0]);
+    logger.log(logMessage[1]);
+    logger.log(logMessage[2]);
+
+    const trxProvider = db.transactionProvider();
+    const trx = await trxProvider();
+
+    console.log('mysql #2 - checking log message from db');
+
+    const logs = await trx(options.tableName).select('*').orderBy('timestamp', 'asc');
+
+    for (let i = 0; i < logs.length; i++) {
+      const {message, level} = logs[i];
+      t.is(message, logMessage[i].message);
+      t.is(level, logMessage[i].level);
+    }
+  } catch (error) {
+    t.fail(JSON.stringify(error));
+  }
 });
