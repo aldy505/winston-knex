@@ -51,14 +51,12 @@ test.serial('should fire a log to the database', async t => {
       'this is an error log'
     ];
 
-    console.log('pg #1 - inserting log messages');
     logger.info(logMessage[0]);
     logger.warn(logMessage[1]);
     logger.error(logMessage[2]);
 
     const trxProvider = db.transactionProvider();
     const trx = await trxProvider();
-    console.log('pg #1 - checking log message from db');
 
     const logs = await trx(options.tableName).select('*').orderBy('timestamp', 'asc');
 
@@ -95,15 +93,12 @@ test.serial('should fire an object log to the database', async t => {
       }
     ];
 
-    console.log('pg #2 - inserting log messages');
     logger.log(logMessage[0]);
     logger.log(logMessage[1]);
     logger.log(logMessage[2]);
 
     const trxProvider = db.transactionProvider();
     const trx = await trxProvider();
-
-    console.log('pg #2 - checking log message from db');
 
     const logs = await trx(options.tableName).select('*').orderBy('timestamp', 'asc');
 

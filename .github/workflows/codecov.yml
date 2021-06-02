@@ -1,4 +1,4 @@
-name: PostgreSQL
+name: Code Coverage
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
     branches: [ "*" ]
 
 jobs:
-  postgres:
-    name: PostgreSQL
+  codecov:
+    name: Code Coverage
     runs-on: ubuntu-latest
     container: node:14.17.0
     services:
@@ -39,7 +39,7 @@ jobs:
         run: yarn
 
       - name: Lint check
-        run: yarn lint:fix
+        run: yarn lint
 
       - name: Building code
         run: yarn build
@@ -48,7 +48,7 @@ jobs:
         run: yarn test
         env:
           MYSQL_CONNECTION_URL: mysql://root:password@mysql:3306/winston
-          POSTGRES_CONNECTION_URL: postgresql://postgres:password@localhost:5432/winston
+          POSTGRES_CONNECTION_URL: postgresql://postgres:password@postgres:5432/winston
       
       - name: Upload to Codecov
         run: bash <(curl -s https://codecov.io/bash)
