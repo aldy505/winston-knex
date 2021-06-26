@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/winston-knex?style=flat-square)](https://www.npmjs.com/package/winston-knex) [![npm](https://img.shields.io/npm/dw/winston-knex?style=flat-square)](https://www.npmjs.com/package/winston-knex) [![Codecov](https://img.shields.io/codecov/c/github/aldy505/winston-knex?style=flat-square)](https://codecov.io/gh/aldy505/winston-knex) [![GitHub Release Date](https://img.shields.io/github/release-date/aldy505/winston-knex?style=flat-square)](https://github.com/aldy505/winston-knex/releases) [![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/aldy505/winston-knex?style=flat-square)](https://github.com/aldy505/winston-knex) [![GitHub](https://img.shields.io/github/license/aldy505/winston-knex?style=flat-square)](https://github.com/aldy505/winston-knex/blob/master/LICENSE)
 
-⚠ **Currently a work in progress**
+⚠ **This module is deprecated and no longer maintained. Please switch to other module or use Knex natively.**
 
  * Supports Winston 3.x
  * Typescript typings built-in
